@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - RAM Infosys Expense Management</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-receipt"></i>
+                    <span>RAM Infosys</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="#dashboard" class="nav-item active" onclick="showSection('dashboard')"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="#pending" class="nav-item" onclick="showSection('pending')"><i class="fas fa-tasks"></i> Pending Expenses</a></li>
+                    <li><a href="#users" class="nav-item" onclick="showSection('users')"><i class="fas fa-users"></i> Manage Users</a></li>
+                    <li><a href="#analytics" class="nav-item" onclick="showSection('analytics')"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+                    <li><a href="#history" class="nav-item" onclick="showSection('history')"><i class="fas fa-history"></i> All Expenses</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <h2 id="pageTitle">Admin Dashboard</h2>
+                <div class="top-bar-right">
+                    <span class="user-name" id="userName">Admin</span>
+                    <img src="https://via.placeholder.com/40" alt="Profile" class="profile-pic">
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon pending">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-label">Total Pending</p>
+                            <h3 id="totalPending">0</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon approved">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-label">Approved</p>
+                            <h3 id="totalApproved">0</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon paid">
+                            <i class="fas fa-money-bill"></i>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-label">Total Paid</p>
+                            <h3 id="totalPaid">₹0</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon total">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-label">Active Users</p>
+                            <h3 id="totalUsers">0</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-container" style="margin-top: 30px;">
+                    <div class="chart-card">
+                        <h3>Company Spending by Category</h3>
+                        <canvas id="companyCategoryChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Monthly Spending Trend</h3>
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pending Expenses Section -->
+            <section id="pending" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h2>Pending Expense Approvals</h2>
+                    <span class="badge" id="pendingBadge">0</span>
+                </div>
+                <div id="pendingExpensesList" class="expenses-table-container"></div>
+            </section>
+
+            <!-- Manage Users Section -->
+            <section id="users" class="content-section" style="display:none;">
+                <div class="section-header">
+                    <h2>Manage Users</h2>
+                    <button class="btn btn-primary" onclick="openCreateUserModal()"><i class="fas fa-plus"></i> Create User</button>
+                </div>
+                <div id="usersList" class="users-table-container"></div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analytics" class="content-section" style="display:none;">
+                <h2>Company Analytics</h2>
+                <div class="filter-bar">
+                    <select id="monthFilter" onchange="updateAnalytics()">
+                        <option value="">All Time</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                    </select>
+                </div>
+                <div class="analytics-cards">
+                    <div class="analytics-card">
+                        <h4>Total Company Expenses</h4>
+                        <p id="totalCompanyExpense" class="big-number">₹0</p>
+                    </div>
+                    <div class="analytics-card">
+                        <h4>Average per Employee</h4>
+                        <p id="avgPerEmployee" class="big-number">₹0</p>
+                    </div>
+                    <div class="analytics-card">
+                        <h4>Highest Category</h4>
+                        <p id="highestCategory" class="big-number">-</p>
+                    </div>
+                    <div class="analytics-card">
+                        <h4>Approval Rate</h4>
+                        <p id="approvalRate" class="big-number">0%</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- All Expenses Section -->
+            <section id="history" class="content-section" style="display:none;">
+                <div class="filter-bar">
+                    <input type="text" id="userSearch" placeholder="Search by user..." onkeyup="filterAllExpenses()">
+                    <select id="allStatusFilter" onchange="filterAllExpenses()">
+                        <option value="">All Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+                <div id="allExpensesList" class="expenses-table-container"></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Create User Modal -->
+    <div id="createUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New User</h2>
+                <span class="close" onclick="closeCreateUserModal()">&times;</span>
+            </div>
+            <form id="createUserForm" class="form-container">
+                <div class="form-group">
+                    <label for="newUserName">Full Name</label>
+                    <input type="text" id="newUserName" required>
+                </div>
+                <div class="form-group">
+                    <label for="newUserEmail">Email</label>
+                    <input type="email" id="newUserEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="newUserPassword">Password</label>
+                    <input type="password" id="newUserPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="newUserRole">Role</label>
+                    <select id="newUserRole" required>
+                        <option value="User">User</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Create User</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/admin.js"></script>
+</body>
+</html>
