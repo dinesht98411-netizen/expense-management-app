@@ -1,1 +1,394 @@
-<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n  <title>Advanced Joke Generator - RAM Infosys</title>\n  <link rel=\"stylesheet\" href=\"../css/styles.css\">\n  <style>\n    * { box-sizing: border-box; }\n    body.dark-mode { background: #1a1a1a; color: #f0f0f0; }\n    body.dark-mode .navbar { background: #2a2a2a; }\n    body.dark-mode .joke-card, body.dark-mode .tab-content { background: #2a2a2a; color: #f0f0f0; }\n    body.dark-mode .joke-setup { color: #e0e0e0; }\n    body.dark-mode .joke-punchline { color: #64b5f6; }\n    body.dark-mode .joke-item, body.dark-mode .favorite-item { background: #333; border: 1px solid #444; }\n    body.dark-mode input, body.dark-mode select { background: #333; color: #f0f0f0; border-color: #555; }\n    \n    .joke-container { display: flex; flex-direction: column; min-height: 100vh; }\n    .joke-page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }\n    .joke-card { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 6px 30px rgba(16,24,40,.08); max-width: 800px; width: 100%; }\n    .joke-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }\n    .joke-header h2 { margin: 0; }\n    .toggle-dark { padding: 0.5rem 1rem; cursor: pointer; }\n    \n    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; flex-wrap: wrap; }\n    .tab-btn { padding: 0.75rem 1.5rem; background: none; border: none; cursor: pointer; font-size: 1rem; border-bottom: 3px solid transparent; transition: all 0.3s; }\n    .tab-btn.active { border-bottom-color: var(--primary-color); color: var(--primary-color); font-weight: 600; }\n    .tab-btn:hover { color: var(--primary-color); }\n    \n    .tab-content { display: none; }\n    .tab-content.active { display: block; }\n    \n    .joke-setup { font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--text-dark); }\n    .joke-punchline { font-weight: 700; color: var(--primary-color); margin-bottom: 1rem; }\n    .joke-controls { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }\n    .btn-small { padding: 0.5rem 1rem; font-size: 0.9rem; }\n    .muted { color: var(--text-light); font-size: 0.9rem; margin-bottom: 1rem; }\n    \n    .config-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }\n    .config-group { display: flex; flex-direction: column; }\n    .config-group label { font-weight: 500; margin-bottom: 0.5rem; color: var(--text-dark); }\n    .config-group select { padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 5px; }\n    \n    .joke-list { display: flex; flex-direction: column; gap: 1rem; max-height: 500px; overflow-y: auto; }\n    .joke-item, .favorite-item { padding: 1rem; background: var(--light-bg); border-radius: 5px; border-left: 3px solid var(--primary-color); }\n    .joke-item-text { font-size: 0.95rem; margin-bottom: 0.5rem; }\n    .joke-item-meta { font-size: 0.85rem; color: var(--text-light); display: flex; justify-content: space-between; }\n    .joke-item-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }\n    .btn-xs { padding: 0.25rem 0.75rem; font-size: 0.8rem; }\n    \n    .empty-state { text-align: center; padding: 2rem; color: var(--text-light); }\n    .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }\n    \n    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem; }\n    .stat-box { background: var(--primary-color); color: white; padding: 1rem; border-radius: 5px; text-align: center; }\n    .stat-box strong { font-size: 1.5rem; display: block; }\n    .stat-box span { font-size: 0.85rem; }\n    \n    @media (max-width: 600px) {\n      .tabs { justify-content: flex-start; overflow-x: auto; }\n      .config-row { grid-template-columns: 1fr; }\n      .joke-controls { flex-direction: column; }\n      .btn-small { width: 100%; }\n    }\n  </style>\n</head>\n<body class=\"joke-container\">\n  <nav class=\"navbar\">\n    <div class=\"navbar-container\">\n      <div class=\"logo\"><i class=\"fas fa-receipt\"></i><span>RAM Infosys</span></div>\n      <ul class=\"nav-links\">\n        <li><a href=\"../index.html\">Home</a></li>\n        <li><a href=\"joke.html\">Basic Joke</a></li>\n        <li><a href=\"login.html\">Login</a></li>\n      </ul>\n    </div>\n  </nav>\n\n  <main class=\"joke-page\">\n    <div class=\"joke-card\">\n      <div class=\"joke-header\">\n        <h2>🎭 Advanced Joke Generator</h2>\n        <button id=\"toggleDark\" class=\"toggle-dark btn btn-secondary\"><i class=\"fas fa-moon\"></i></button>\n      </div>\n      <p class=\"muted\">Generate, save, and manage jokes with multiple sources and categories.</p>\n\n      <!-- Tabs -->\n      <div class=\"tabs\">\n        <button class=\"tab-btn active\" data-tab=\"generator\"><i class=\"fas fa-dice\"></i> Generator</button>\n        <button class=\"tab-btn\" data-tab=\"favorites\"><i class=\"fas fa-heart\"></i> Favorites</button>\n        <button class=\"tab-btn\" data-tab=\"history\"><i class=\"fas fa-history\"></i> History</button>\n        <button class=\"tab-btn\" data-tab=\"stats\"><i class=\"fas fa-chart-bar\"></i> Stats</button>\n      </div>\n\n      <!-- Generator Tab -->\n      <div id=\"generator\" class=\"tab-content active\">\n        <div class=\"config-row\">\n          <div class=\"config-group\">\n            <label for=\"apiSelect\">API Source</label>\n            <select id=\"apiSelect\">\n              <option value=\"official\">Official Joke API</option>\n              <option value=\"icanhaz\">icanhazdadjoke</option>\n              <option value=\"mixed\">Random Mix</option>\n            </select>\n          </div>\n          <div class=\"config-group\">\n            <label for=\"categorySelect\">Category (Official only)</label>\n            <select id=\"categorySelect\">\n              <option value=\"random\">Random</option>\n              <option value=\"general\">General</option>\n              <option value=\"programming\">Programming</option>\n              <option value=\"knock-knock\">Knock Knock</option>\n            </select>\n          </div>\n        </div>\n\n        <div id=\"jokeContent\">\n          <div id=\"jokeSetup\" class=\"joke-setup\">Click <strong>Get Joke</strong> to load a random joke.</div>\n          <div id=\"jokePunchline\" class=\"joke-punchline\"></div>\n        </div>\n\n        <div class=\"joke-controls\">\n          <button id=\"getJokeBtn\" class=\"btn btn-primary btn-small\"><i class=\"fas fa-bolt\"></i> Get Joke</button>\n          <button id=\"copyBtn\" class=\"btn btn-secondary btn-small\"><i class=\"fas fa-copy\"></i> Copy</button>\n          <button id=\"shareBtn\" class=\"btn btn-success btn-small\"><i class=\"fas fa-share-alt\"></i> Share</button>\n          <button id=\"favoriteBtn\" class=\"btn btn-danger btn-small\"><i class=\"fas fa-heart\"></i> Favorite</button>\n        </div>\n      </div>\n\n      <!-- Favorites Tab -->\n      <div id=\"favorites\" class=\"tab-content\">\n        <div id=\"favoritesList\" class=\"joke-list\"></div>\n      </div>\n\n      <!-- History Tab -->\n      <div id=\"history\" class=\"tab-content\">\n        <button id=\"clearHistoryBtn\" class=\"btn btn-danger btn-small\" style=\"margin-bottom: 1rem;\"><i class=\"fas fa-trash\"></i> Clear History</button>\n        <div id=\"historyList\" class=\"joke-list\"></div>\n      </div>\n\n      <!-- Stats Tab -->\n      <div id=\"stats\" class=\"tab-content\">\n        <div id=\"statsContent\"></div>\n      </div>\n    </div>\n  </main>\n\n  <script src=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js\"></script>\n  <script>\n    // Advanced Joke Generator\n    const state = {\n      currentJoke: null,\n      favorites: JSON.parse(localStorage.getItem('jokesFavorites')) || [],\n      history: JSON.parse(localStorage.getItem('jokesHistory')) || [],\n      darkMode: localStorage.getItem('jokesDarkMode') === 'true'\n    };\n\n    // DOM Elements\n    const getJokeBtn = document.getElementById('getJokeBtn');\n    const copyBtn = document.getElementById('copyBtn');\n    const shareBtn = document.getElementById('shareBtn');\n    const favoriteBtn = document.getElementById('favoriteBtn');\n    const apiSelect = document.getElementById('apiSelect');\n    const categorySelect = document.getElementById('categorySelect');\n    const jokeSetup = document.getElementById('jokeSetup');\n    const jokePunchline = document.getElementById('jokePunchline');\n    const toggleDarkBtn = document.getElementById('toggleDark');\n    const clearHistoryBtn = document.getElementById('clearHistoryBtn');\n    const tabBtns = document.querySelectorAll('.tab-btn');\n    const tabContents = document.querySelectorAll('.tab-content');\n\n    // Initialize\n    if (state.darkMode) document.body.classList.add('dark-mode');\n\n    // Fetch Jokes\n    async function fetchOfficialJoke(category = 'random') {\n      let url = 'https://official-joke-api.appspot.com/random_joke';\n      if (category !== 'random') {\n        url = `https://official-joke-api.appspot.com/jokes/${encodeURIComponent(category)}/random`;\n      }\n      const res = await fetch(url);\n      if (!res.ok) throw new Error('Official API failed');\n      let data = await res.json();\n      if (Array.isArray(data)) data = data[0];\n      return { setup: data.setup || '', punchline: data.punchline || '', type: 'official' };\n    }\n\n    async function fetchIcanhazJoke() {\n      const res = await fetch('https://icanhazdadjoke.com/', { headers: { Accept: 'application/json' } });\n      if (!res.ok) throw new Error('icanhazdadjoke failed');\n      const data = await res.json();\n      return { setup: data.joke || '', punchline: '', type: 'icanhaz' };\n    }\n\n    async function getJoke() {\n      getJokeBtn.disabled = true;\n      getJokeBtn.innerHTML = '<i class=\"fas fa-spinner fa-spin\"></i> Loading...';\n      try {\n        let jokeData;\n        const api = apiSelect.value;\n        if (api === 'official') {\n          jokeData = await fetchOfficialJoke(categorySelect.value);\n        } else if (api === 'icanhaz') {\n          jokeData = await fetchIcanhazJoke();\n        } else {\n          jokeData = Math.random() > 0.5 ? await fetchOfficialJoke() : await fetchIcanhazJoke();\n        }\n        state.currentJoke = jokeData;\n        renderJoke(jokeData);\n        addToHistory(jokeData);\n        updateFavoriteBtnState();\n      } catch (err) {\n        renderJoke({ setup: 'Sorry, could not load a joke right now.', punchline: '', type: 'error' });\n        console.error(err);\n      } finally {\n        getJokeBtn.disabled = false;\n        getJokeBtn.innerHTML = '<i class=\"fas fa-bolt\"></i> Get Joke';\n      }\n    }\n\n    function renderJoke(joke) {\n      jokeSetup.textContent = joke.setup || '';\n      jokePunchline.textContent = joke.punchline || '';\n    }\n\n    function addToHistory(joke) {\n      const jokeStr = joke.punchline ? `${joke.setup}\\n${joke.punchline}` : joke.setup;\n      const isDuplicate = state.history.some(h => h.text === jokeStr);\n      if (!isDuplicate && jokeStr) {\n        state.history.unshift({ text: jokeStr, timestamp: new Date().toLocaleString(), source: joke.type });\n        if (state.history.length > 50) state.history.pop();\n        localStorage.setItem('jokesHistory', JSON.stringify(state.history));\n      }\n    }\n\n    function addToFavorites() {\n      if (!state.currentJoke) return alert('No joke to save');\n      const jokeStr = state.currentJoke.punchline ? `${state.currentJoke.setup}\\n${state.currentJoke.punchline}` : state.currentJoke.setup;\n      const isDuplicate = state.favorites.some(f => f.text === jokeStr);\n      if (isDuplicate) return alert('Already in favorites');\n      state.favorites.unshift({ text: jokeStr, timestamp: new Date().toLocaleString(), source: state.currentJoke.type });\n      localStorage.setItem('jokesFavorites', JSON.stringify(state.favorites));\n      updateFavoriteBtnState();\n      alert('Added to favorites!');\n    }\n\n    function removeFromFavorites(index) {\n      state.favorites.splice(index, 1);\n      localStorage.setItem('jokesFavorites', JSON.stringify(state.favorites));\n      renderFavorites();\n    }\n\n    function removeFromHistory(index) {\n      state.history.splice(index, 1);\n      localStorage.setItem('jokesHistory', JSON.stringify(state.history));\n      renderHistory();\n    }\n\n    function updateFavoriteBtnState() {\n      if (!state.currentJoke) {\n        favoriteBtn.disabled = true;\n        return;\n      }\n      const jokeStr = state.currentJoke.punchline ? `${state.currentJoke.setup}\\n${state.currentJoke.punchline}` : state.currentJoke.setup;\n      const isFav = state.favorites.some(f => f.text === jokeStr);\n      favoriteBtn.innerHTML = isFav ? '<i class=\"fas fa-heart\"></i> Favorited' : '<i class=\"fas fa-heart\"></i> Favorite';\n      favoriteBtn.classList.toggle('active', isFav);\n    }\n\n    function renderFavorites() {\n      const container = document.getElementById('favoritesList');\n      if (state.favorites.length === 0) {\n        container.innerHTML = '<div class=\"empty-state\"><i class=\"fas fa-bookmark\"></i><p>No favorites yet</p></div>';\n        return;\n      }\n      container.innerHTML = state.favorites.map((fav, idx) => `\n        <div class=\"favorite-item\">\n          <div class=\"joke-item-text\">${fav.text}</div>\n          <div class=\"joke-item-meta\">\n            <span>${fav.timestamp} • ${fav.source}</span>\n            <div class=\"joke-item-actions\">\n              <button class=\"btn btn-secondary btn-xs\" onclick=\"copyJoke('${fav.text.replace(/'/g, \"\\\\'\")}')\">\n                <i class=\"fas fa-copy\"></i>\n              </button>\n              <button class=\"btn btn-danger btn-xs\" onclick=\"removeFav(${idx})\">\n                <i class=\"fas fa-trash\"></i>\n              </button>\n            </div>\n          </div>\n        </div>\n      `).join('');\n    }\n\n    function renderHistory() {\n      const container = document.getElementById('historyList');\n      if (state.history.length === 0) {\n        container.innerHTML = '<div class=\"empty-state\"><i class=\"fas fa-history\"></i><p>No history yet</p></div>';\n        return;\n      }\n      container.innerHTML = state.history.map((hist, idx) => `\n        <div class=\"joke-item\">\n          <div class=\"joke-item-text\">${hist.text}</div>\n          <div class=\"joke-item-meta\">\n            <span>${hist.timestamp} • ${hist.source}</span>\n            <div class=\"joke-item-actions\">\n              <button class=\"btn btn-secondary btn-xs\" onclick=\"copyJoke('${hist.text.replace(/'/g, \"\\\\'\")}')\">\n                <i class=\"fas fa-copy\"></i>\n              </button>\n              <button class=\"btn btn-danger btn-xs\" onclick=\"removeHist(${idx})\">\n                <i class=\"fas fa-trash\"></i>\n              </button>\n            </div>\n          </div>\n        </div>\n      `).join('');\n    }\n\n    function renderStats() {\n      const container = document.getElementById('statsContent');\n      const apiCounts = { official: 0, icanhaz: 0, error: 0 };\n      state.history.forEach(h => apiCounts[h.source] = (apiCounts[h.source] || 0) + 1);\n      \n      container.innerHTML = `\n        <div class=\"stats\">\n          <div class=\"stat-box\">\n            <strong>${state.favorites.length}</strong>\n            <span>Favorites</span>\n          </div>\n          <div class=\"stat-box\">\n            <strong>${state.history.length}</strong>\n            <span>Total Fetched</span>\n          </div>\n          <div class=\"stat-box\">\n            <strong>${apiCounts.official}</strong>\n            <span>Official API</span>\n          </div>\n          <div class=\"stat-box\">\n            <strong>${apiCounts.icanhaz}</strong>\n            <span>icanhazdadjoke</span>\n          </div>\n        </div>\n      `;\n    }\n\n    // Event Listeners\n    getJokeBtn.addEventListener('click', getJoke);\n    favoriteBtn.addEventListener('click', addToFavorites);\n    toggleDarkBtn.addEventListener('click', () => {\n      state.darkMode = !state.darkMode;\n      document.body.classList.toggle('dark-mode');\n      localStorage.setItem('jokesDarkMode', state.darkMode);\n    });\n    clearHistoryBtn.addEventListener('click', () => {\n      if (confirm('Clear all history?')) {\n        state.history = [];\n        localStorage.setItem('jokesHistory', JSON.stringify(state.history));\n        renderHistory();\n      }\n    });\n    copyBtn.addEventListener('click', () => {\n      if (!state.currentJoke) return alert('No joke to copy');\n      const text = state.currentJoke.punchline ? `${state.currentJoke.setup}\\n${state.currentJoke.punchline}` : state.currentJoke.setup;\n      navigator.clipboard.writeText(text).then(() => alert('Copied!')).catch(() => alert('Failed'));\n    });\n    shareBtn.addEventListener('click', () => {\n      if (!state.currentJoke) return alert('No joke to share');\n      const text = state.currentJoke.punchline ? `${state.currentJoke.setup}\\n${state.currentJoke.punchline}` : state.currentJoke.setup;\n      if (navigator.share) {\n        navigator.share({ title: 'Funny Joke', text }).catch(() => {});\n      } else {\n        alert('Share not available. Use Copy instead.');\n      }\n    });\n\n    tabBtns.forEach(btn => btn.addEventListener('click', () => {\n      const tab = btn.dataset.tab;\n      tabBtns.forEach(b => b.classList.remove('active'));\n      tabContents.forEach(c => c.classList.remove('active'));\n      btn.classList.add('active');\n      document.getElementById(tab).classList.add('active');\n      if (tab === 'favorites') renderFavorites();\n      if (tab === 'history') renderHistory();\n      if (tab === 'stats') renderStats();\n    }));\n\n    // Global functions\n    window.copyJoke = (text) => {\n      navigator.clipboard.writeText(text).then(() => alert('Copied!')).catch(() => alert('Failed'));\n    };\n    window.removeFav = (idx) => removeFromFavorites(idx);\n    window.removeHist = (idx) => removeFromHistory(idx);\n  </script>\n</body>\n</html>"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Advanced Joke Generator - RAM Infosys</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    * { box-sizing: border-box; }
+    body.dark-mode { background: #1a1a1a; color: #f0f0f0; }
+    body.dark-mode .navbar { background: #2a2a2a; }
+    body.dark-mode .joke-card, body.dark-mode .tab-content { background: #2a2a2a; color: #f0f0f0; }
+    body.dark-mode .joke-setup { color: #e0e0e0; }
+    body.dark-mode .joke-punchline { color: #64b5f6; }
+    body.dark-mode .joke-item, body.dark-mode .favorite-item { background: #333; border: 1px solid #444; }
+    body.dark-mode input, body.dark-mode select { background: #333; color: #f0f0f0; border-color: #555; }
+    
+    .joke-container { display: flex; flex-direction: column; min-height: 100vh; }
+    .joke-page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
+    .joke-card { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 6px 30px rgba(16,24,40,.08); max-width: 800px; width: 100%; }
+    .joke-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .joke-header h2 { margin: 0; }
+    .toggle-dark { padding: 0.5rem 1rem; cursor: pointer; }
+    
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; flex-wrap: wrap; }
+    .tab-btn { padding: 0.75rem 1.5rem; background: none; border: none; cursor: pointer; font-size: 1rem; border-bottom: 3px solid transparent; transition: all 0.3s; }
+    .tab-btn.active { border-bottom-color: var(--primary-color); color: var(--primary-color); font-weight: 600; }
+    .tab-btn:hover { color: var(--primary-color); }
+    
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    .joke-setup { font-size: 1.2rem; margin-bottom: 0.75rem; color: var(--text-dark); }
+    .joke-punchline { font-weight: 700; color: var(--primary-color); margin-bottom: 1rem; }
+    .joke-controls { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+    .btn-small { padding: 0.5rem 1rem; font-size: 0.9rem; }
+    .muted { color: var(--text-light); font-size: 0.9rem; margin-bottom: 1rem; }
+    
+    .config-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .config-group { display: flex; flex-direction: column; }
+    .config-group label { font-weight: 500; margin-bottom: 0.5rem; color: var(--text-dark); }
+    .config-group select { padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 5px; }
+    
+    .joke-list { display: flex; flex-direction: column; gap: 1rem; max-height: 500px; overflow-y: auto; }
+    .joke-item, .favorite-item { padding: 1rem; background: var(--light-bg); border-radius: 5px; border-left: 3px solid var(--primary-color); }
+    .joke-item-text { font-size: 0.95rem; margin-bottom: 0.5rem; }
+    .joke-item-meta { font-size: 0.85rem; color: var(--text-light); display: flex; justify-content: space-between; }
+    .joke-item-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    .btn-xs { padding: 0.25rem 0.75rem; font-size: 0.8rem; }
+    
+    .empty-state { text-align: center; padding: 2rem; color: var(--text-light); }
+    .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+    
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    .stat-box { background: var(--primary-color); color: white; padding: 1rem; border-radius: 5px; text-align: center; }
+    .stat-box strong { font-size: 1.5rem; display: block; }
+    .stat-box span { font-size: 0.85rem; }
+    
+    @media (max-width: 600px) {
+      .tabs { justify-content: flex-start; overflow-x: auto; }
+      .config-row { grid-template-columns: 1fr; }
+      .joke-controls { flex-direction: column; }
+      .btn-small { width: 100%; }
+    }
+  </style>
+</head>
+<body class="joke-container">
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="logo"><i class="fas fa-receipt"></i><span>RAM Infosys</span></div>
+      <ul class="nav-links">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="joke.html">Basic Joke</a></li>
+        <li><a href="login.html">Login</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="joke-page">
+    <div class="joke-card">
+      <div class="joke-header">
+        <h2>🎭 Advanced Joke Generator</h2>
+        <button id="toggleDark" class="toggle-dark btn btn-secondary"><i class="fas fa-moon"></i></button>
+      </div>
+      <p class="muted">Generate, save, and manage jokes with multiple sources and categories.</p>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="generator"><i class="fas fa-dice"></i> Generator</button>
+        <button class="tab-btn" data-tab="favorites"><i class="fas fa-heart"></i> Favorites</button>
+        <button class="tab-btn" data-tab="history"><i class="fas fa-history"></i> History</button>
+        <button class="tab-btn" data-tab="stats"><i class="fas fa-chart-bar"></i> Stats</button>
+      </div>
+
+      <!-- Generator Tab -->
+      <div id="generator" class="tab-content active">
+        <div class="config-row">
+          <div class="config-group">
+            <label for="apiSelect">API Source</label>
+            <select id="apiSelect">
+              <option value="official">Official Joke API</option>
+              <option value="icanhaz">icanhazdadjoke</option>
+              <option value="mixed">Random Mix</option>
+            </select>
+          </div>
+          <div class="config-group">
+            <label for="categorySelect">Category (Official only)</label>
+            <select id="categorySelect">
+              <option value="random">Random</option>
+              <option value="general">General</option>
+              <option value="programming">Programming</option>
+              <option value="knock-knock">Knock Knock</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="jokeContent">
+          <div id="jokeSetup" class="joke-setup">Click <strong>Get Joke</strong> to load a random joke.</div>
+          <div id="jokePunchline" class="joke-punchline"></div>
+        </div>
+
+        <div class="joke-controls">
+          <button id="getJokeBtn" class="btn btn-primary btn-small"><i class="fas fa-bolt"></i> Get Joke</button>
+          <button id="copyBtn" class="btn btn-secondary btn-small"><i class="fas fa-copy"></i> Copy</button>
+          <button id="shareBtn" class="btn btn-success btn-small"><i class="fas fa-share-alt"></i> Share</button>
+          <button id="favoriteBtn" class="btn btn-danger btn-small"><i class="fas fa-heart"></i> Favorite</button>
+        </div>
+      </div>
+
+      <!-- Favorites Tab -->
+      <div id="favorites" class="tab-content">
+        <div id="favoritesList" class="joke-list"></div>
+      </div>
+
+      <!-- History Tab -->
+      <div id="history" class="tab-content">
+        <button id="clearHistoryBtn" class="btn btn-danger btn-small" style="margin-bottom: 1rem;"><i class="fas fa-trash"></i> Clear History</button>
+        <div id="historyList" class="joke-list"></div>
+      </div>
+
+      <!-- Stats Tab -->
+      <div id="stats" class="tab-content">
+        <div id="statsContent"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  <script>
+    // Advanced Joke Generator
+    const state = {
+      currentJoke: null,
+      favorites: JSON.parse(localStorage.getItem('jokesFavorites')) || [],
+      history: JSON.parse(localStorage.getItem('jokesHistory')) || [],
+      darkMode: localStorage.getItem('jokesDarkMode') === 'true'
+    };
+
+    // DOM Elements
+    const getJokeBtn = document.getElementById('getJokeBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const favoriteBtn = document.getElementById('favoriteBtn');
+    const apiSelect = document.getElementById('apiSelect');
+    const categorySelect = document.getElementById('categorySelect');
+    const jokeSetup = document.getElementById('jokeSetup');
+    const jokePunchline = document.getElementById('jokePunchline');
+    const toggleDarkBtn = document.getElementById('toggleDark');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    // Initialize
+    if (state.darkMode) document.body.classList.add('dark-mode');
+
+    // Fetch Jokes
+    async function fetchOfficialJoke(category = 'random') {
+      let url = 'https://official-joke-api.appspot.com/random_joke';
+      if (category !== 'random') {
+        url = `https://official-joke-api.appspot.com/jokes/${encodeURIComponent(category)}/random`;
+      }
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Official API failed');
+      let data = await res.json();
+      if (Array.isArray(data)) data = data[0];
+      return { setup: data.setup || '', punchline: data.punchline || '', type: 'official' };
+    }
+
+    async function fetchIcanhazJoke() {
+      const res = await fetch('https://icanhazdadjoke.com/', { headers: { Accept: 'application/json' } });
+      if (!res.ok) throw new Error('icanhazdadjoke failed');
+      const data = await res.json();
+      return { setup: data.joke || '', punchline: '', type: 'icanhaz' };
+    }
+
+    async function getJoke() {
+      getJokeBtn.disabled = true;
+      getJokeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+      try {
+        let jokeData;
+        const api = apiSelect.value;
+        if (api === 'official') {
+          jokeData = await fetchOfficialJoke(categorySelect.value);
+        } else if (api === 'icanhaz') {
+          jokeData = await fetchIcanhazJoke();
+        } else {
+          jokeData = Math.random() > 0.5 ? await fetchOfficialJoke() : await fetchIcanhazJoke();
+        }
+        state.currentJoke = jokeData;
+        renderJoke(jokeData);
+        addToHistory(jokeData);
+        updateFavoriteBtnState();
+      } catch (err) {
+        renderJoke({ setup: 'Sorry, could not load a joke right now.', punchline: '', type: 'error' });
+        console.error(err);
+      } finally {
+        getJokeBtn.disabled = false;
+        getJokeBtn.innerHTML = '<i class="fas fa-bolt"></i> Get Joke';
+      }
+    }
+
+    function renderJoke(joke) {
+      jokeSetup.textContent = joke.setup || '';
+      jokePunchline.textContent = joke.punchline || '';
+    }
+
+    function addToHistory(joke) {
+      const jokeStr = joke.punchline ? `${joke.setup}\n${joke.punchline}` : joke.setup;
+      const isDuplicate = state.history.some(h => h.text === jokeStr);
+      if (!isDuplicate && jokeStr) {
+        state.history.unshift({ text: jokeStr, timestamp: new Date().toLocaleString(), source: joke.type });
+        if (state.history.length > 50) state.history.pop();
+        localStorage.setItem('jokesHistory', JSON.stringify(state.history));
+      }
+    }
+
+    function addToFavorites() {
+      if (!state.currentJoke) return alert('No joke to save');
+      const jokeStr = state.currentJoke.punchline ? `${state.currentJoke.setup}\n${state.currentJoke.punchline}` : state.currentJoke.setup;
+      const isDuplicate = state.favorites.some(f => f.text === jokeStr);
+      if (isDuplicate) return alert('Already in favorites');
+      state.favorites.unshift({ text: jokeStr, timestamp: new Date().toLocaleString(), source: state.currentJoke.type });
+      localStorage.setItem('jokesFavorites', JSON.stringify(state.favorites));
+      updateFavoriteBtnState();
+      alert('Added to favorites!');
+    }
+
+    function removeFromFavorites(index) {
+      state.favorites.splice(index, 1);
+      localStorage.setItem('jokesFavorites', JSON.stringify(state.favorites));
+      renderFavorites();
+    }
+
+    function removeFromHistory(index) {
+      state.history.splice(index, 1);
+      localStorage.setItem('jokesHistory', JSON.stringify(state.history));
+      renderHistory();
+    }
+
+    function updateFavoriteBtnState() {
+      if (!state.currentJoke) {
+        favoriteBtn.disabled = true;
+        return;
+      }
+      const jokeStr = state.currentJoke.punchline ? `${state.currentJoke.setup}\n${state.currentJoke.punchline}` : state.currentJoke.setup;
+      const isFav = state.favorites.some(f => f.text === jokeStr);
+      favoriteBtn.innerHTML = isFav ? '<i class="fas fa-heart"></i> Favorited' : '<i class="fas fa-heart"></i> Favorite';
+      favoriteBtn.classList.toggle('active', isFav);
+    }
+
+    function renderFavorites() {
+      const container = document.getElementById('favoritesList');
+      if (state.favorites.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-bookmark"></i><p>No favorites yet</p></div>';
+        return;
+      }
+      container.innerHTML = state.favorites.map((fav, idx) => `
+        <div class="favorite-item">
+          <div class="joke-item-text">${fav.text}</div>
+          <div class="joke-item-meta">
+            <span>${fav.timestamp} • ${fav.source}</span>
+            <div class="joke-item-actions">
+              <button class="btn btn-secondary btn-xs" onclick="copyJoke('${fav.text.replace(/'/g, "\\'")}')">
+                <i class="fas fa-copy"></i>
+              </button>
+              <button class="btn btn-danger btn-xs" onclick="removeFav(${idx})">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderHistory() {
+      const container = document.getElementById('historyList');
+      if (state.history.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p>No history yet</p></div>';
+        return;
+      }
+      container.innerHTML = state.history.map((hist, idx) => `
+        <div class="joke-item">
+          <div class="joke-item-text">${hist.text}</div>
+          <div class="joke-item-meta">
+            <span>${hist.timestamp} • ${hist.source}</span>
+            <div class="joke-item-actions">
+              <button class="btn btn-secondary btn-xs" onclick="copyJoke('${hist.text.replace(/'/g, "\\'")}')">
+                <i class="fas fa-copy"></i>
+              </button>
+              <button class="btn btn-danger btn-xs" onclick="removeHist(${idx})">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderStats() {
+      const container = document.getElementById('statsContent');
+      const apiCounts = { official: 0, icanhaz: 0, error: 0 };
+      state.history.forEach(h => apiCounts[h.source] = (apiCounts[h.source] || 0) + 1);
+      
+      container.innerHTML = `
+        <div class="stats">
+          <div class="stat-box">
+            <strong>${state.favorites.length}</strong>
+            <span>Favorites</span>
+          </div>
+          <div class="stat-box">
+            <strong>${state.history.length}</strong>
+            <span>Total Fetched</span>
+          </div>
+          <div class="stat-box">
+            <strong>${apiCounts.official}</strong>
+            <span>Official API</span>
+          </div>
+          <div class="stat-box">
+            <strong>${apiCounts.icanhaz}</strong>
+            <span>icanhazdadjoke</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // Event Listeners
+    getJokeBtn.addEventListener('click', getJoke);
+    favoriteBtn.addEventListener('click', addToFavorites);
+    toggleDarkBtn.addEventListener('click', () => {
+      state.darkMode = !state.darkMode;
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('jokesDarkMode', state.darkMode);
+    });
+    clearHistoryBtn.addEventListener('click', () => {
+      if (confirm('Clear all history?')) {
+        state.history = [];
+        localStorage.setItem('jokesHistory', JSON.stringify(state.history));
+        renderHistory();
+      }
+    });
+    copyBtn.addEventListener('click', () => {
+      if (!state.currentJoke) return alert('No joke to copy');
+      const text = state.currentJoke.punchline ? `${state.currentJoke.setup}\n${state.currentJoke.punchline}` : state.currentJoke.setup;
+      navigator.clipboard.writeText(text).then(() => alert('Copied!')).catch(() => alert('Failed'));
+    });
+    shareBtn.addEventListener('click', () => {
+      if (!state.currentJoke) return alert('No joke to share');
+      const text = state.currentJoke.punchline ? `${state.currentJoke.setup}\n${state.currentJoke.punchline}` : state.currentJoke.setup;
+      if (navigator.share) {
+        navigator.share({ title: 'Funny Joke', text }).catch(() => {});
+      } else {
+        alert('Share not available. Use Copy instead.');
+      }
+    });
+
+    tabBtns.forEach(btn => btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(tab).classList.add('active');
+      if (tab === 'favorites') renderFavorites();
+      if (tab === 'history') renderHistory();
+      if (tab === 'stats') renderStats();
+    }));
+
+    // Global functions
+    window.copyJoke = (text) => {
+      navigator.clipboard.writeText(text).then(() => alert('Copied!')).catch(() => alert('Failed'));
+    };
+    window.removeFav = (idx) => removeFromFavorites(idx);
+    window.removeHist = (idx) => removeFromHistory(idx);
+  </script>
+</body>
+</html>
